@@ -38,7 +38,7 @@ jobs:
           npm run test
           CONTAINER_IMAGE_TAG="$(node -e "console.log(require('./package.json').version);")"
           echo Building the Docker image...
-          docker build -t alex00pep/ecommerce-products:$CONTAINER_IMAGE_TAG . 
+          docker build -t ghcr.io/alex00pep/ecommerce-products:$CONTAINER_IMAGE_TAG . 
           echo Pushing the Docker image...
           docker push ghcr.io/alex00pep/ecommerce-products:$CONTAINER_IMAGE_TAG
       # Clone git repository with Helm charts, update and push changes
