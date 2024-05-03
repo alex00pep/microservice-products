@@ -53,11 +53,10 @@ jobs:
           cd ${TEMP_FOLDER}/application-charts/products 
           ls
           echo Update Helm chart values-dev with new image tag
-          CONTAINER_IMAGE_TAG=$CONTAINER_IMAGE_TAG yq e -i '.products.deployment.imageTag = env(CONTAINER_IMAGE_TAG)' ./values-dev.yaml
-          echo 'Container image tag updated in products/values-dev.yaml' 
-          cd ../../
+          yq e -i '.products.deployment.imageTag = env(CONTAINER_IMAGE_TAG)' ./values-dev.yaml
+          echo 'Container image tag updated in products/values-dev.yaml'           
           git config user.email "alexmtnezf@gmail.com" 
           git config user.name "Alexander Martinez Fajardo" 
-          git add .  
+          git add .
           git commit -m "refactor - updated Helm chart values for dev environment with container image - $CONTAINER_IMAGE_TAG" 
           git push -u origin main
