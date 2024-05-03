@@ -2,10 +2,8 @@ name: 'Build Docker Image & Update Application Helm Chart Values'
 on:
   push:
     branches:
-      - fleet
+      - main
 env:
-  DOCKER_ID: ${{ secrets.DOCKER_ID }}
-  DOCKER_PW: ${{ secrets.DOCKER_PW }}
   ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 jobs:
   build_image:
@@ -21,11 +19,12 @@ jobs:
           node-version: '14'
       - run: npm install
       # Login to Docker registry
-      - name: Login to Docker Hub
+      - name: Login to Github Container Registry
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_ID }}
-          password: ${{ secrets.DOCKER_PW }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       # Install yq
       - name: Install yq 
         run: |
@@ -39,26 +38,26 @@ jobs:
           npm run test
           CONTAINER_IMAGE_TAG="$(node -e "console.log(require('./package.json').version);")"
           echo Building the Docker image...
-          docker build -t lukondefmwila/ecommerce-products:$CONTAINER_IMAGE_TAG . 
+          docker build -t alex00pep/ecommerce-products:$CONTAINER_IMAGE_TAG . 
           echo Pushing the Docker image...
-          docker push lukondefmwila/ecommerce-products:$CONTAINER_IMAGE_TAG
+          docker push ghcr.io/alex00pep/ecommerce-products:$CONTAINER_IMAGE_TAG
       # Clone git repository with Helm charts, update and push changes
       - name: Update image tag in Helm git repo 
         run: | 
           CONTAINER_IMAGE_TAG="$(node -e "console.log(require('./package.json').version);")"
-          echo New container image tag: $CONTAINER_IMAGE_TAG
-          echo Create temporary folder to clone the repo into...
+          echo "New container image tag: $CONTAINER_IMAGE_TAG"
+          echo "Create temporary folder to clone the repo into..."
           TEMP_FOLDER="$(mktemp -d)" 
           echo Clone the repository...
-          git clone -b main "https://LukeMwila:${ACCESS_TOKEN}@github.com/LukeMwila/microservice-example-helm-charts.git" ${TEMP_FOLDER} 
+          git clone -b main "https://alex00pep:${ACCESS_TOKEN}@github.com/alex00pep/microservice-example-helm-charts.git" ${TEMP_FOLDER} 
           cd ${TEMP_FOLDER}/application-charts/products 
           ls
           echo Update Helm chart values-dev with new image tag
           CONTAINER_IMAGE_TAG=$CONTAINER_IMAGE_TAG yq e -i '.products.deployment.imageTag = env(CONTAINER_IMAGE_TAG)' ./values-dev.yaml
           echo 'Container image tag updated in products/values-dev.yaml' 
           cd ../../
-          git config user.email "lukemwila.tech@gmail.com" 
-          git config user.name "LukeMwila" 
+          git config user.email "alexmtnezf@gmail.com" 
+          git config user.name "Alexander Martinez Fajardo" 
           git add .  
           git commit -m "refactor - updated Helm chart values for dev environment with container image - $CONTAINER_IMAGE_TAG" 
           git push -u origin main
